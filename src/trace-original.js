@@ -34,7 +34,7 @@ export default {
 
   id: 'crosshair',
 
-  beforeInit: function(chart) {
+  afterInit: function(chart) {
     
     if (!chart.config.options.scales.x) {
       return
@@ -81,14 +81,11 @@ export default {
         }
       }.bind(this);
 
-      window.addEventListener('sync-event', chart.crosshair.syncEventHandler,);
+      window.addEventListener('sync-event', chart.crosshair.syncEventHandler);
       window.addEventListener('reset-zoom-event', chart.crosshair.resetZoomEventHandler);
     }
 
     chart.panZoom = this.panZoom.bind(this, chart);
-    chart.doZoom = this.doZoom.bind(this, chart);
-    chart.destroy = this.destroy.bind(this, chart);
-    
   },
 
   destroy: function(chart) {
@@ -97,7 +94,6 @@ export default {
       window.removeEventListener('sync-event', chart.crosshair.syncEventHandler);
       window.removeEventListener('reset-zoom-event', chart.crosshair.resetZoomEventHandler);
     }
-    
   },
 
   panZoom: function(chart, increment) {
@@ -311,7 +307,7 @@ export default {
     }
 
     if (chart.crosshair.button && chart.crosshair.button.parentNode) {
-      // chart.crosshair.button.parentNode.removeChild(chart.crosshair.button);
+      chart.crosshair.button.parentNode.removeChild(chart.crosshair.button);
       chart.crosshair.button = false;
     }
 
@@ -358,23 +354,18 @@ export default {
 
     if (!chart.crosshair.button) {
       // add restore zoom button
-      // var button = document.createElement('button');
+      var button = document.createElement('button');
 
-      //
-      let buttonClass = this.getOption(chart, 'zoom', 'zoomButtonClass')
-      let button = document.getElementsByClassName(buttonClass)[0]
-      //
+      var buttonText = this.getOption(chart, 'zoom', 'zoomButtonText')
+      var buttonClass = this.getOption(chart, 'zoom', 'zoomButtonClass')
 
-      // var buttonText = this.getOption(chart, 'zoom', 'zoomButtonText')
-      // var buttonClass = this.getOption(chart, 'zoom', 'zoomButtonClass')
-
-      // var buttonLabel = document.createTextNode(buttonText);
-      // button.appendChild(buttonLabel);
-      // button.className = buttonClass;
+      var buttonLabel = document.createTextNode(buttonText);
+      button.appendChild(buttonLabel);
+      button.className = buttonClass;
       button.addEventListener('click', function() {
         this.resetZoom(chart);
       }.bind(this));
-      // chart.canvas.parentNode.appendChild(button);
+      chart.canvas.parentNode.appendChild(button);
       chart.crosshair.button = button;
     }
 
