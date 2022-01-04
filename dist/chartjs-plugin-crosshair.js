@@ -1,4 +1,109 @@
-import {valueOrDefault} from 'chart.js/helpers';
+/*!
+ * chartjs-plugin-crosshair v1.2.0
+ * https://chartjs-plugin-crosshair.netlify.com
+ * (c) 2022 Chart.js Contributors
+ * Released under the MIT license
+ */
+(function (global, factory) {
+typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('chart.js'), require('chart.js/helpers')) :
+typeof define === 'function' && define.amd ? define(['chart.js', 'chart.js/helpers'], factory) :
+(global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.Chart, global.Chart.helpers));
+}(this, (function (chart_js, helpers) { 'use strict';
+
+function Interpolate(chart, e, options) {
+
+	var items = [];
+
+	for (var datasetIndex = 0; datasetIndex < chart.data.datasets.length; datasetIndex++) {
+
+
+		// check for interpolate setting
+		if (!chart.data.datasets[datasetIndex].interpolate) {
+			continue;
+		}
+
+		var meta = chart.getDatasetMeta(datasetIndex);
+		// do not interpolate hidden charts
+		if (meta.hidden) {
+			continue;
+		}
+
+
+		var xScale = chart.scales[meta.xAxisID];
+		var yScale = chart.scales[meta.yAxisID];
+
+		var xValue = xScale.getValueForPixel(e.x);
+
+		if (xValue > xScale.max || xValue < xScale.min) {
+			continue;
+		}
+
+		var data = chart.data.datasets[datasetIndex].data;
+
+		var index = data.findIndex(function(o) {
+			return o.x >= xValue;
+		});
+
+		if (index === -1) {
+			continue;
+		}
+
+
+		// linear interpolate value
+		var prev = data[index - 1];
+		var next = data[index];
+
+		if (prev && next) {
+			var slope = (next.y - prev.y) / (next.x - prev.x);
+			var interpolatedValue = prev.y + (xValue - prev.x) * slope;
+		}
+
+		if (chart.data.datasets[datasetIndex].steppedLine && prev) {
+			interpolatedValue = prev.y;
+		}
+
+		if (isNaN(interpolatedValue)) {
+			continue;
+		}
+
+		var yPosition = yScale.getPixelForValue(interpolatedValue);
+
+		// do not interpolate values outside of the axis limits
+		if (isNaN(yPosition)) {
+			continue;
+		}
+
+		// create a 'fake' event point
+
+		var fakePoint = {
+			hasValue: function() {
+				return true;
+			},
+			tooltipPosition: function() {
+				return this._model
+			},
+			_model: {x: e.x, y: yPosition},
+			skip: false,
+			stop: false,
+			x: xValue,
+			y: interpolatedValue
+		};
+
+		items.push({datasetIndex: datasetIndex, element: fakePoint, index: 0});
+	}
+
+
+	// add other, not interpolated, items
+	var xItems = chart_js.Interaction.modes.x(chart, e, options);
+	for (index = 0; index < xItems.length; index++) {
+		var item = xItems[index];
+		if (!chart.data.datasets[item.datasetIndex].interpolate) {
+			items.push(item);
+		}
+	}
+
+	return items;
+}
 
 var defaultOptions = {
   line: {
@@ -30,7 +135,7 @@ var defaultOptions = {
   }
 };
 
-export default {
+var TracePlugin = {
 
   id: 'crosshair',
 
@@ -40,7 +145,7 @@ export default {
       return
     }
 
-    var xScaleType = chart.config.options.scales.x.type
+    var xScaleType = chart.config.options.scales.x.type;
 
     if (xScaleType !== 'linear' && xScaleType !== 'time' && xScaleType !== 'category' && xScaleType !== 'logarithmic') {
       return;
@@ -119,7 +224,7 @@ export default {
   },
 
   getOption: function(chart, category, name) {
-    return valueOrDefault(chart.options.plugins.crosshair[category] ? chart.options.plugins.crosshair[category][name] : undefined, defaultOptions[category][name]);
+    return helpers.valueOrDefault(chart.options.plugins.crosshair[category] ? chart.options.plugins.crosshair[category][name] : undefined, defaultOptions[category][name]);
   },
 
   getXScale: function(chart) {
@@ -175,9 +280,9 @@ export default {
       return
     }
 
-    let e = event.event
+    let e = event.event;
 
-    var xScaleType = chart.config.options.scales.x.type
+    var xScaleType = chart.config.options.scales.x.type;
 
     if (xScaleType !== 'linear' && xScaleType !== 'time' && xScaleType !== 'category' && xscaleType !== 'logarithmic') {
       return;
@@ -190,7 +295,7 @@ export default {
     }
 
     if(chart.crosshair.ignoreNextEvents > 0) {
-      chart.crosshair.ignoreNextEvents -= 1
+      chart.crosshair.ignoreNextEvents -= 1;
       return;
     }
 
@@ -223,13 +328,13 @@ export default {
     if (!chart.crosshair.enabled && !chart.crosshair.suppressUpdate) {
       if (e.x > xScale.getPixelForValue(xScale.max)) {
         // suppress future updates to prevent endless redrawing of chart
-        chart.crosshair.suppressUpdate = true
+        chart.crosshair.suppressUpdate = true;
         chart.update('none');
       }
-      chart.crosshair.dragStarted = false // cancel zoom in progress
+      chart.crosshair.dragStarted = false; // cancel zoom in progress
       return false;
     }
-    chart.crosshair.suppressUpdate = false
+    chart.crosshair.suppressUpdate = false;
 
     // handle drag to zoom
     var zoomEnabled = this.getOption(chart, 'zoom', 'enabled');
@@ -310,10 +415,7 @@ export default {
       }
     }
 
-    if (chart.crosshair.button && chart.crosshair.button.parentNode) {
-      // chart.crosshair.button.parentNode.removeChild(chart.crosshair.button);
-      // chart.crosshair.button = false;
-    }
+    if (chart.crosshair.button && chart.crosshair.button.parentNode) ;
 
     var syncEnabled = this.getOption(chart, 'sync', 'enabled');
 
@@ -341,13 +443,13 @@ export default {
     }
 
     // notify delegate
-    var beforeZoomCallback = valueOrDefault(chart.options.plugins.crosshair.callbacks ? chart.options.plugins.crosshair.callbacks.beforeZoom : undefined, defaultOptions.callbacks.beforeZoom);
+    var beforeZoomCallback = helpers.valueOrDefault(chart.options.plugins.crosshair.callbacks ? chart.options.plugins.crosshair.callbacks.beforeZoom : undefined, defaultOptions.callbacks.beforeZoom);
 
     if (!beforeZoomCallback(start, end)) {
       return false;
     }
 
-    chart.crosshair.dragStarted = false
+    chart.crosshair.dragStarted = false;
 
     if (chart.options.scales.x.min && chart.crosshair.originalData.length === 0) {
       chart.crosshair.originalXRange.min = chart.options.scales.x.min;
@@ -361,8 +463,8 @@ export default {
       // var button = document.createElement('button');
 
       //
-      let buttonClass = this.getOption(chart, 'zoom', 'zoomButtonClass')
-      let button = document.getElementsByClassName(buttonClass)[0]
+      let buttonClass = this.getOption(chart, 'zoom', 'zoomButtonClass');
+      let button = document.getElementsByClassName(buttonClass)[0];
       //
 
       // var buttonText = this.getOption(chart, 'zoom', 'zoomButtonText')
@@ -387,7 +489,7 @@ export default {
     var storeOriginals = (chart.crosshair.originalData.length === 0) ? true : false;
 
 
-    var filterDataset = (chart.config.options.scales.x.type !== 'category')
+    var filterDataset = (chart.config.options.scales.x.type !== 'category');
 
     if(filterDataset) {
 
@@ -409,7 +511,7 @@ export default {
 
           var oldData = sourceDataset[oldDataIndex];
           // var oldDataX = this.getXScale(chart).getRightValue(oldData)
-          var oldDataX = oldData.x !== undefined ? oldData.x : NaN
+          var oldDataX = oldData.x !== undefined ? oldData.x : NaN;
 
           // append one value outside of bounds
           if (oldDataX >= start && !started && index > 0) {
@@ -440,7 +542,7 @@ export default {
       chart.crosshair.max = xAxes.max;
     }
 
-    chart.crosshair.ignoreNextEvents = 2 // ignore next 2 events to prevent starting a new zoom action after updating the chart
+    chart.crosshair.ignoreNextEvents = 2; // ignore next 2 events to prevent starting a new zoom action after updating the chart
 
     chart.update('none');
 
@@ -555,3 +657,8 @@ export default {
 
 };
 
+// install plugins
+chart_js.Chart.register(TracePlugin);
+chart_js.Interaction.modes.interpolate = Interpolate;
+
+})));
