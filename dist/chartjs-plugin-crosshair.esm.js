@@ -563,7 +563,27 @@ var CrosshairPlugin = {
 
   drawTraceLine: function(chart) {
 
-    return
+    var yScale = this.getYScale(chart);
+
+    var lineWidth = this.getOption(chart, 'line', 'width');
+    var color = this.getOption(chart, 'line', 'color');
+    var dashPattern = this.getOption(chart, 'line', 'dashPattern');
+    var snapEnabled = this.getOption(chart, 'snap', 'enabled');
+
+    var lineX = chart.crosshair.x;
+
+    if (snapEnabled && chart._active.length) {
+      lineX = chart._active[0].element.x;
+    }
+
+    chart.ctx.beginPath();
+    chart.ctx.setLineDash(dashPattern);
+    chart.ctx.moveTo(lineX, yScale.getPixelForValue(yScale.max));
+    chart.ctx.lineWidth = lineWidth;
+    chart.ctx.strokeStyle = color;
+    chart.ctx.lineTo(lineX, yScale.getPixelForValue(yScale.min));
+    chart.ctx.stroke();
+    chart.ctx.setLineDash([]);
 
   },
 

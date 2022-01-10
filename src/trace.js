@@ -470,8 +470,6 @@ export default {
 
   drawTraceLine: function(chart) {
 
-    return
-
     var yScale = this.getYScale(chart);
 
     var lineWidth = this.getOption(chart, 'line', 'width');
