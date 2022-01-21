@@ -393,14 +393,16 @@ var CrosshairPlugin = {
 
       // reset original xRange
       if (chart.crosshair.originalXRange.min) {
-        chart.options.scales.x.min = chart.crosshair.originalXRange.min;
-        chart.crosshair.originalXRange.min = null;
+        // chart.options.scales.x.min = chart.crosshair.originalXRange.min;
+        // chart.crosshair.originalXRange.min = null;
+        delete chart.options.scales.x.min;
       } else {
         delete chart.options.scales.x.min;
       }
       if (chart.crosshair.originalXRange.max) {
-        chart.options.scales.x.max = chart.crosshair.originalXRange.max;
-        chart.crosshair.originalXRange.max = null;
+        // chart.options.scales.x.max = chart.crosshair.originalXRange.max;
+        // chart.crosshair.originalXRange.max = null;
+        delete chart.options.scales.x.max;
       } else {
         delete chart.options.scales.x.max;
       }
