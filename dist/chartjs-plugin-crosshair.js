@@ -402,16 +402,15 @@ var TracePlugin = {
 
       // reset original xRange
       if (chart.crosshair.originalXRange.min) {
-        // chart.options.scales.x.min = chart.crosshair.originalXRange.min;
-        // chart.crosshair.originalXRange.min = null;
-        delete chart.options.scales.x.min;
+        chart.options.scales.x.min = chart.crosshair.originalXRange.min;
+        chart.crosshair.originalXRange.min = null;
       } else {
         delete chart.options.scales.x.min;
       }
+
       if (chart.crosshair.originalXRange.max) {
-        // chart.options.scales.x.max = chart.crosshair.originalXRange.max;
-        // chart.crosshair.originalXRange.max = null;
-        delete chart.options.scales.x.max;
+        chart.options.scales.x.max = chart.crosshair.originalXRange.max;
+        chart.crosshair.originalXRange.max = null;
       } else {
         delete chart.options.scales.x.max;
       }
@@ -456,6 +455,7 @@ var TracePlugin = {
     if (chart.options.scales.x.min && chart.crosshair.originalData.length === 0) {
       chart.crosshair.originalXRange.min = chart.options.scales.x.min;
     }
+
     if (chart.options.scales.x.max && chart.crosshair.originalData.length === 0) {
       chart.crosshair.originalXRange.max = chart.options.scales.x.max;
     }
@@ -493,7 +493,8 @@ var TracePlugin = {
 
     var filterDataset = (chart.config.options.scales.x.type !== 'category');
 
-    if(filterDataset) {
+    // if(filterDataset) {
+    if(filterDataset && false) {
 
 
       for (var datasetIndex = 0; datasetIndex < chart.data.datasets.length; datasetIndex++) {
